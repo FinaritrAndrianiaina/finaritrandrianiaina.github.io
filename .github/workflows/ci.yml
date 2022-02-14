@@ -1,0 +1,22 @@
+on: [push]
+
+name: Trunk Build
+
+jobs:
+  wasm_build:
+    name: Wasm Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true 
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: install
+          args: trunk
+      - run: cargo build
+      - run: trunk build
