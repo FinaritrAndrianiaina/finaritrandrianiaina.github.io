@@ -1,6 +1,10 @@
-on: [push]
-
 name: Trunk Build
+
+on:
+  push:
+    branches:
+      - main  # Set a branch name to trigger deployment
+  pull_request:
 
 jobs:
   wasm_build:
@@ -13,6 +17,12 @@ jobs:
           toolchain: stable
           target: wasm32-unknown-unknown
           override: true 
+      - run: rustup component add clippy
+      - name: Clippy check
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
@@ -20,3 +30,9 @@ jobs:
           args: trunk
       - run: cargo build
       - run: trunk build
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
